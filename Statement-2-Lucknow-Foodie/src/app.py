@@ -1,5 +1,5 @@
 from data_loader import load_data
-from semantic_search import semantic_search
+from hybrid_search import hybrid_search
 
 def main():
     df = load_data("../dataset/restaurants.csv")
@@ -7,7 +7,7 @@ def main():
     if df is None:
         return
 
-    print("🧠 Lucknow Foodie (Semantic Search)\n")
+    print(" Lucknow Foodie \n")
 
     while True:
         query = input("Enter your query (or 'exit'): ")
@@ -15,7 +15,7 @@ def main():
         if query.lower() == "exit":
             break
 
-        results = semantic_search(df, query)
+        results = hybrid_search(df, query)
 
         print("\nTop Results:\n")
         for _, row in results.head(5).iterrows():
