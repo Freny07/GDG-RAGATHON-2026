@@ -1,0 +1,13 @@
+# env
+.env
+
+# python
+__pycache__/
+*.pyc
+
+# virtual env
+venv/
+
+# db + models
+db/
+models/
