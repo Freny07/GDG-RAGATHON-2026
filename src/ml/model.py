@@ -1,5 +1,5 @@
 import pickle
-from config import MODEL_PATH
+from src.config import MODEL_PATH
 from src.ml.preprocess import process_features
 
 def load_model():

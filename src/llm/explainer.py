@@ -1,23 +1,24 @@
-from openai import OpenAI
-from config import OPENAI_API_KEY
-
-client = OpenAI(api_key=OPENAI_API_KEY)
-
 def generate_explanation(profile, score, interviews):
-    prompt = f"""
-Profile: {profile}
-Score: {score}
-Interviews: {interviews}
+    explanation = f"""
+Your predicted placement readiness score is {round(score, 2)}.
 
-Explain:
-- Why this score
-- Weak areas
-- Improvement roadmap
+Strengths:
+- Skills: {profile['skills']}
+- Projects: {profile['projects']}
+
+Areas to improve:
+- Increase internships
+- Improve DSA and system design
+
+Suggestions:
+- Practice LeetCode regularly
+- Build 1–2 strong projects
+- Prepare using interview experiences
+
+Relevant Interviews:
 """
 
-    response = client.chat.completions.create(
-        model="gpt-4o-mini",
-        messages=[{"role": "user", "content": prompt}]
-    )
+    for i, interview in enumerate(interviews[:2]):
+        explanation += f"\n---\n{interview[:200]}...\n"
 
-    return response.choices[0].message.content
+    return explanation

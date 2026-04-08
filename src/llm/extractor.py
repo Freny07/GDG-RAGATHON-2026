@@ -1,30 +1,46 @@
-from openai import OpenAI
-from config import OPENAI_API_KEY
-
-client = OpenAI(api_key=OPENAI_API_KEY)
-
 def extract_profile(text):
-    prompt = f"""
-Extract student profile into JSON:
+    text = text.lower()
 
-{{
-  "academic_score": float,
-  "dsa": int,
-  "projects": int,
-  "experience": int,
-  "opensource": int,
-  "soft_skills": int,
-  "tech_stack": int,
-  "skills": list
-}}
+    profile = {
+        "academic_score": 7,
+        "dsa": 5,
+        "projects": 2,
+        "experience": 1,
+        "opensource": 0,
+        "soft_skills": 5,
+        "tech_stack": 5,
+        "skills": []
+    }
 
-Text:
-{text}
-"""
+    # simple parsing
+    if "cgpa" in text:
+        try:
+            words = text.split()
+            for i, w in enumerate(words):
+                if "cgpa" in w:
+                    profile["academic_score"] = float(words[i-1])
+        except:
+            pass
 
-    response = client.chat.completions.create(
-        model="gpt-4o-mini",
-        messages=[{"role": "user", "content": prompt}]
-    )
+    if "dsa" in text:
+        profile["dsa"] = 7
 
-    return eval(response.choices[0].message.content)
+    if "project" in text:
+        profile["projects"] = 3
+
+    if "internship" in text:
+        profile["experience"] = 2
+
+    if "python" in text:
+        profile["skills"].append("Python")
+
+    if "ml" in text:
+        profile["skills"].append("ML")
+
+    if "react" in text:
+        profile["skills"].append("React")
+
+    if not profile["skills"]:
+        profile["skills"] = ["DSA"]
+
+    return profile

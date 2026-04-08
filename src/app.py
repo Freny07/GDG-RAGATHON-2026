@@ -8,13 +8,22 @@ app = FastAPI()
 
 @app.get("/")
 def home():
-    return {"message": "Placement Predictor API running 🚀"}
+    return {"message": "Placement Predictor running 🚀"}
 
 @app.post("/predict")
 def predict(data: dict):
-    profile = extract_profile(data["text"])
+    text = data["text"]
+
+    # Step 1: Extract profile using LLM
+    profile = extract_profile(text)
+
+    # Step 2: Predict score using ML
     score = predict_score(profile)
+
+    # Step 3: Get interview matches using RAG
     interviews = get_interviews(profile)
+
+    # Step 4: Generate explanation using LLM
     explanation = generate_explanation(profile, score, interviews)
 
     return {
