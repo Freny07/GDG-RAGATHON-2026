@@ -39,6 +39,9 @@ def get_weaknesses(profile):
     if profile["dsa"] < 5:
         weaknesses.append("Weak DSA")
 
+    if not weaknesses:
+        weaknesses.append("Need stronger DSA consistency")
+
     return weaknesses
 
 # -----------------------------
@@ -58,6 +61,28 @@ def predict(data: dict):
 
     # Step 2: Predict score
     score = predict_score(profile)
+
+    # ------------------------
+    # 🚀 SMART ADJUSTMENT LAYER
+    # ------------------------
+    boost = 0
+
+    if profile["academic_score"] >= 8.5:
+        boost += 10
+
+    if profile["projects"] >= 3:
+        boost += 8
+
+    if profile["experience"] >= 2:
+        boost += 10
+
+    if len(profile["skills"]) >= 5:
+        boost += 7
+
+    if profile["dsa"] >= 7:
+        boost += 8
+
+    score = min(100, score + boost)
 
     # Step 3: RAG retrieval
     interviews = get_interviews(profile)
@@ -98,6 +123,29 @@ def upload_resume(file: UploadFile = File(...)):
     # Same pipeline
     profile = extract_profile(text)
     score = predict_score(profile)
+
+    # ------------------------
+    # 🚀 SMART ADJUSTMENT LAYER
+    # ------------------------
+    boost = 0
+
+    if profile["academic_score"] >= 8.5:
+        boost += 10
+
+    if profile["projects"] >= 3:
+        boost += 8
+
+    if profile["experience"] >= 2:
+        boost += 10
+
+    if len(profile["skills"]) >= 5:
+        boost += 7
+
+    if profile["dsa"] >= 7:
+        boost += 8
+
+    score = min(100, score + boost)
+
     interviews = get_interviews(profile)
     explanation = generate_explanation(profile, score, interviews)
 
