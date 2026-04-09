@@ -195,7 +195,7 @@ export default function App() {
           transition={{ duration: 0.5 }}
         >
           <p className="mb-3 font-mono text-xs uppercase tracking-[0.35em] text-cyan-400/90">
-            GDG · RAG pipeline
+            GDG · RAGATHON 2026
           </p>
           <h1 className="text-4xl font-bold tracking-tight sm:text-5xl md:text-6xl">
             <span className="text-gradient">Placement Predictor</span>
