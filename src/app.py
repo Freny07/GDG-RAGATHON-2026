@@ -8,7 +8,7 @@ from src.utils.parser import extract_text_from_pdf
 app = FastAPI()
 
 # =====================================================
-# 🧠 HELPER FUNCTIONS (CORE LOGIC LAYER)
+# 🧠 HELPER FUNCTIONS
 # =====================================================
 
 def get_level(score):
@@ -48,7 +48,7 @@ def get_weaknesses(profile):
 
 
 # =====================================================
-# 🚀 ADVANCED INTELLIGENCE LAYER
+# 🚀 INTELLIGENCE LAYER
 # =====================================================
 
 def adjust_for_role(profile, role):
@@ -112,30 +112,7 @@ def roadmap(profile):
     return steps
 
 
-# =====================================================
-# 🌐 ROUTES
-# =====================================================
-
-@app.get("/")
-def home():
-    return {"message": "Placement Predictor running 🚀"}
-
-
-@app.post("/predict")
-def predict(data: dict):
-    text = data["text"]
-    role = data.get("role", "SDE")
-
-    # Step 1: Extract
-    profile = extract_profile(text)
-
-    # Step 2: Role adjustment
-    profile = adjust_for_role(profile, role)
-
-    # Step 3: Base ML score
-    score = predict_score(profile)
-
-    # Step 4: Smart boost layer
+def apply_boost(profile, score):
     boost = 0
 
     if profile["academic_score"] >= 8.5:
@@ -153,15 +130,32 @@ def predict(data: dict):
     if profile["dsa"] >= 7:
         boost += 8
 
-    score = min(100, score + boost)
+    return min(100, score + boost)
 
-    # Step 5: RAG
+
+# =====================================================
+# 🌐 ROUTES
+# =====================================================
+
+@app.get("/")
+def home():
+    return {"message": "Placement Predictor running 🚀"}
+
+
+@app.post("/predict")
+def predict(data: dict):
+    text = data["text"]
+    role = data.get("role", "SDE")
+
+    profile = extract_profile(text)
+    profile = adjust_for_role(profile, role)
+
+    score = predict_score(profile)
+    score = apply_boost(profile, score)
+
     interviews = get_interviews(profile)
-
-    # Step 6: Explanation
     explanation = generate_explanation(profile, score, interviews)
 
-    # Step 7: Intelligence layer
     level = get_level(score)
     companies = suggest_companies(score)
     weaknesses = get_weaknesses(profile)
@@ -199,26 +193,7 @@ def upload_resume(file: UploadFile = File(...)):
     profile = adjust_for_role(profile, "SDE")
 
     score = predict_score(profile)
-
-    # Smart boost layer
-    boost = 0
-
-    if profile["academic_score"] >= 8.5:
-        boost += 10
-
-    if profile["projects"] >= 3:
-        boost += 8
-
-    if profile["experience"] >= 2:
-        boost += 10
-
-    if len(profile["skills"]) >= 5:
-        boost += 7
-
-    if profile["dsa"] >= 7:
-        boost += 8
-
-    score = min(100, score + boost)
+    score = apply_boost(profile, score)
 
     interviews = get_interviews(profile)
     explanation = generate_explanation(profile, score, interviews)
@@ -244,4 +219,43 @@ def upload_resume(file: UploadFile = File(...)):
         "weaknesses": weaknesses,
         "interviews": interviews,
         "analysis": explanation
+    }
+
+
+# =====================================================
+# 💥 WHAT-IF SIMULATOR (UPGRADED)
+# =====================================================
+
+@app.post("/simulate")
+def simulate(data: dict):
+    text = data["text"]
+    changes = data.get("changes", {})
+
+    profile = extract_profile(text)
+    original_profile = profile.copy()
+
+    # Apply changes
+    for key, value in changes.items():
+        if key in profile:
+            profile[key] = value
+
+    original_score = apply_boost(original_profile, predict_score(original_profile))
+    new_score = apply_boost(profile, predict_score(profile))
+
+    impact = round(new_score - original_score, 2)
+
+    # 🔥 SMART MESSAGE ENGINE
+    if impact > 40:
+        insight = "🚀 Massive improvement potential! You're close to top-tier companies."
+    elif impact > 20:
+        insight = "📈 Strong improvement possible with focused effort."
+    else:
+        insight = "⚡ Small improvements can still boost your chances."
+
+    return {
+        "current_score": original_score,
+        "improved_score": new_score,
+        "impact": impact,
+        "priority_changes": sorted(changes.keys()),
+        "message": f"{insight} (+{impact} points)"
     }
