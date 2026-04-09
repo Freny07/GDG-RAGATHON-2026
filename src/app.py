@@ -4,8 +4,18 @@ from src.ml.model import predict_score
 from src.rag.retriever import get_interviews
 from src.llm.explainer import generate_explanation
 from src.utils.parser import extract_text_from_pdf
+from fastapi.middleware.cors import CORSMiddleware
+
 
 app = FastAPI()
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 # =====================================================
 # 🧠 HELPER FUNCTIONS
@@ -154,7 +164,7 @@ def predict(data: dict):
     score = apply_boost(profile, score)
 
     interviews = get_interviews(profile)
-    explanation = generate_explanation(profile, score, interviews)
+    explanation = generate_explanation(profile, score, interviews, role=role)
 
     level = get_level(score)
     companies = suggest_companies(score)
@@ -196,7 +206,7 @@ def upload_resume(file: UploadFile = File(...)):
     score = apply_boost(profile, score)
 
     interviews = get_interviews(profile)
-    explanation = generate_explanation(profile, score, interviews)
+    explanation = generate_explanation(profile, score, interviews, role="SDE")
 
     level = get_level(score)
     companies = suggest_companies(score)
@@ -228,10 +238,34 @@ def upload_resume(file: UploadFile = File(...)):
 
 @app.post("/simulate")
 def simulate(data: dict):
-    text = data["text"]
-    changes = data.get("changes", {})
+    def safe_get(obj, key, default=None):
+        try:
+            return obj.get(key, default)
+        except Exception:
+            try:
+                return obj[key]
+            except Exception:
+                return default
 
-    profile = extract_profile(text)
+    text = safe_get(data, "text")
+    changes = safe_get(data, "changes", {}) or {}
+    incoming_profile = safe_get(data, "profile")
+
+    if text:
+        profile = extract_profile(text)
+    elif isinstance(incoming_profile, dict):
+        # Allow simulation from already-extracted profile (e.g. PDF upload flow)
+        profile = incoming_profile.copy()
+    else:
+        return {
+            "error": "Provide either 'text' or 'profile' for simulation.",
+            "current_score": 0,
+            "improved_score": 0,
+            "impact": 0,
+            "priority_changes": [],
+            "message": "Simulation could not run due to missing input."
+        }
+
     original_profile = profile.copy()
 
     # Apply changes

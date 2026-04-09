@@ -5,6 +5,8 @@ pandas
 numpy
 openai
 langchain
+langchain-community
 chromadb
 pdfplumber
+python-multipart
 python-dotenv
